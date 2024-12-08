@@ -13,15 +13,18 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-     TasksScreen(),
-     TankScreen(),
+    const TasksScreen(),
+    const TankScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AquaBuddy'),
+        title: Text(
+          'AquaBuddy',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
       ),
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(

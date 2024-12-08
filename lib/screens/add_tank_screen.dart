@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:hive/hive.dart';
+import '../models/tank.dart';
 
 class AddTankScreen extends StatefulWidget {
   const AddTankScreen({super.key});
@@ -17,21 +19,27 @@ class _AddTankScreenState extends State<AddTankScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Tank'),
+        title: Text('Add New Tank',
+            style: Theme.of(context).textTheme.titleLarge,
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
-              decoration: const InputDecoration(labelText: 'Tank Name'),
+              decoration: InputDecoration(
+                labelText: 'Tank Name',
+                labelStyle: Theme.of(context).textTheme.bodyMedium,
+              ),
               onChanged: (value) => _tankName = value,
             ),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Water Type:'),
+                Text('Water Type:', style: Theme.of(context).textTheme.bodyMedium),
                 DropdownButton<String>(
                   value: _waterType,
                   items: ['Freshwater', 'Saltwater']
@@ -45,16 +53,26 @@ class _AddTankScreenState extends State<AddTankScreen> {
               ],
             ),
             const SizedBox(height: 20),
-            const Text('Tank Color:'),
+            Text('Tank Color:', style: Theme.of(context).textTheme.bodyMedium),
             BlockPicker(
               pickerColor: _selectedColor,
               onColorChanged: (color) => setState(() => _selectedColor = color),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                // Save tank details to database
-                Navigator.pop(context);
+              onPressed: () async {
+                if (_tankName.isNotEmpty) {
+                  final tank = Tank(
+                    name: _tankName,
+                    waterType: _waterType,
+                    color: _selectedColor.value,
+                  );
+
+                  final tanksBox = Hive.box<Tank>('tanks');
+                  await tanksBox.add(tank); // Save tank to Hive box
+                }
+
+                Navigator.pop(context); // Return to TankScreen
               },
               child: const Text('Save Tank'),
             ),
