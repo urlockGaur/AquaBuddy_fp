@@ -20,19 +20,31 @@ class TankAdapter extends TypeAdapter<Tank> {
       name: fields[0] as String,
       waterType: fields[1] as String,
       color: fields[2] as int,
+      sizeInGallons: fields[3] as int,
+      fishKeys: (fields[4] as List).cast<int>(),
+      invertebrateKeys: (fields[5] as List).cast<int>(),
+      plantKeys: (fields[6] as List).cast<int>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, Tank obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
       ..write(obj.waterType)
       ..writeByte(2)
-      ..write(obj.color);
+      ..write(obj.color)
+      ..writeByte(3)
+      ..write(obj.sizeInGallons)
+      ..writeByte(4)
+      ..write(obj.fishKeys)
+      ..writeByte(5)
+      ..write(obj.invertebrateKeys)
+      ..writeByte(6)
+      ..write(obj.plantKeys);
   }
 
   @override

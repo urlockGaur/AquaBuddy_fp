@@ -1,8 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:aquabuddy/screens/home_screen.dart';
+import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/tank.dart';
 import 'models/task.dart';
+import 'models/species.dart';
+import 'package:flutter/material.dart';
+import 'screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -10,13 +13,49 @@ void main() async {
 
   Hive.registerAdapter(TankAdapter());
   Hive.registerAdapter(TaskAdapter());
+  Hive.registerAdapter(SpeciesAdapter());
 
   await Hive.openBox<Tank>('tanks');
   await Hive.openBox<Task>('tasks');
+  await Hive.openBox<Species>('fish');
+  await Hive.openBox<Species>("invertebrates");
+  await Hive.openBox<Species>('plants');
+
+  await seedSpeciesData();
 
   runApp(const AquaBuddyApp());
 }
+Future<void> seedSpeciesData() async {
+  final fishBox = Hive.box<Species>('fish');
+  final invertebratesBox = Hive.box<Species>('invertebrates');
+  final plantsBox = Hive.box<Species>('plants');
 
+  if (fishBox.isEmpty && invertebratesBox.isEmpty && plantsBox.isEmpty) {
+    final String data = await rootBundle.loadString('assets/species_data.json');
+    final Map<String, dynamic> jsonResult = json.decode(data);
+
+    for (var fish in jsonResult['fish']) {
+      fishBox.add(Species(
+        name: fish['name'],
+        scientificName: fish['scientificName'],
+      ));
+    }
+
+    for (var invert in jsonResult['invertebrates']) {
+      invertebratesBox.add(Species(
+        name: invert['name'],
+        scientificName: invert['scientificName'],
+      ));
+    }
+
+    for (var plant in jsonResult['plants']) {
+      plantsBox.add(Species(
+        name: plant['name'],
+        scientificName: plant['scientificName'],
+      ));
+    }
+  }
+}
 class AquaBuddyApp extends StatelessWidget {
   const AquaBuddyApp({super.key});
 

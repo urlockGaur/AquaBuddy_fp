@@ -14,14 +14,13 @@ class _AddTankScreenState extends State<AddTankScreen> {
   String _tankName = '';
   Color _selectedColor = Colors.blue;
   String _waterType = 'Freshwater';
+  int _sizeInGallons = 0; // New field for tank size
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add New Tank',
-            style: Theme.of(context).textTheme.titleLarge,
-        ),
+        title: Text('Add New Tank', style: Theme.of(context).textTheme.titleLarge),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -34,6 +33,15 @@ class _AddTankScreenState extends State<AddTankScreen> {
                 labelStyle: Theme.of(context).textTheme.bodyMedium,
               ),
               onChanged: (value) => _tankName = value,
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Tank Size (in gallons)',
+                labelStyle: Theme.of(context).textTheme.bodyMedium,
+              ),
+              keyboardType: TextInputType.number,
+              onChanged: (value) => _sizeInGallons = int.tryParse(value) ?? 0,
             ),
             const SizedBox(height: 20),
             Row(
@@ -61,11 +69,12 @@ class _AddTankScreenState extends State<AddTankScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                if (_tankName.isNotEmpty) {
+                if (_tankName.isNotEmpty && _sizeInGallons > 0) {
                   final tank = Tank(
                     name: _tankName,
                     waterType: _waterType,
                     color: _selectedColor.value,
+                    sizeInGallons: _sizeInGallons,
                   );
 
                   final tanksBox = Hive.box<Tank>('tanks');
