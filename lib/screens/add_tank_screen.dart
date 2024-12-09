@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:hive/hive.dart';
 import '../models/tank.dart';
+import 'package:uuid/uuid.dart';
 
 class AddTankScreen extends StatefulWidget {
   const AddTankScreen({super.key});

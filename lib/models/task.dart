@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 
 part 'task.g.dart';
 
-@HiveType(typeId: 1)
+@HiveType(typeId: 2)
 class Task extends HiveObject {
   @HiveField(0)
   String title;
@@ -11,12 +11,20 @@ class Task extends HiveObject {
   String description;
 
   @HiveField(2)
-  bool isCompleted; // Now mutable
+  DateTime dueDate;
+
+  @HiveField(3)
+  bool isCompleted;
+
+  @HiveField(4)
+  int? tankKey; // Link to a specific tank
 
   Task({
     required this.title,
     required this.description,
-    this.isCompleted = false,
+    required this.dueDate,
+    required this.isCompleted,
+    this.tankKey,
   });
 }
 

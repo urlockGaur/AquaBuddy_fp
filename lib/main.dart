@@ -6,6 +6,7 @@ import 'models/task.dart';
 import 'models/species.dart';
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,7 @@ void main() async {
   await Hive.openBox<Species>('plants');
 
   await seedSpeciesData();
+  await NotificationService.initialize();
 
   runApp(const AquaBuddyApp());
 }
@@ -78,10 +80,10 @@ class AquaBuddyApp extends StatelessWidget {
           selectedItemColor: Color(0xFF007ACC),
           unselectedItemColor: Colors.grey,
         ),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Colors.grey),
-          titleLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        textTheme: TextTheme(
+          bodyLarge: const TextStyle(color: Colors.white),
+          bodyMedium: TextStyle(color: Colors.grey[300]),
+          titleLarge: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
           backgroundColor: Color(0xFF007ACC), // Blue FAB background
@@ -96,8 +98,13 @@ class AquaBuddyApp extends StatelessWidget {
             ),
           ),
         ),
+        checkboxTheme: CheckboxThemeData(
+          fillColor: WidgetStateProperty.all(const Color(0xFF007ACC)), // Use primary blue for checkboxes
+          checkColor: WidgetStateProperty.all(Colors.white), // White checkmark
+        ),
       ),
       home: const HomeScreen(),
     );
   }
 }
+

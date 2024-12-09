@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import '../models/species.dart';
 import '../models/tank.dart';
 
 class AddFishScreen extends StatefulWidget {
-  final Tank tank; // Tank to which fish will be added
+  final Tank tank;
 
-  const AddFishScreen({Key? key, required this.tank}) : super(key: key);
+  const AddFishScreen({super.key, required this.tank});
 
   @override
   _AddFishScreenState createState() => _AddFishScreenState();
@@ -42,10 +41,16 @@ class _AddFishScreenState extends State<AddFishScreen> {
     setState(() {
       if (widget.tank.fishKeys.contains(fishKey)) {
         widget.tank.fishKeys = List.from(widget.tank.fishKeys)..remove(fishKey);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Removed ${species.name} from tank.')),
+        );
       } else {
         widget.tank.fishKeys = List.from(widget.tank.fishKeys)..add(fishKey);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Added ${species.name} to tank.')),
+        );
       }
-      widget.tank.save(); // Save changes to Hive
+      widget.tank.save();
     });
   }
 
@@ -67,7 +72,8 @@ class _AddFishScreenState extends State<AddFishScreen> {
               onChanged: (value) => setState(() => searchQuery = value),
             ),
           ),
-          // Display selected fish
+          const Divider(),
+          // Selected Fish Display
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
@@ -79,28 +85,19 @@ class _AddFishScreenState extends State<AddFishScreen> {
                 ),
                 const SizedBox(height: 8.0),
                 SizedBox(
-                  height: 100.0, // Adjust height as needed
+                  height: 50.0,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: getSelectedFish().map((species) {
-                      return Card(
-                        margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                        color: Theme.of(context).cardColor,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                species.name,
-                                style: Theme.of(context).textTheme.bodyLarge,
-                              ),
-                              Text(
-                                species.scientificName,
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                            ],
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: Chip(
+                          label: Text(
+                            species.name,
+                            style: const TextStyle(color: Colors.white),
                           ),
+                          onDeleted: () => toggleFishInTank(species),
+                          backgroundColor: const Color(0xFF1E1E1E),
                         ),
                       );
                     }).toList(),
@@ -110,7 +107,7 @@ class _AddFishScreenState extends State<AddFishScreen> {
             ),
           ),
           const Divider(),
-          // Display available fish with checkboxes
+          // Available Fish List
           Expanded(
             child: ValueListenableBuilder(
               valueListenable: fishBox.listenable(),
@@ -132,12 +129,10 @@ class _AddFishScreenState extends State<AddFishScreen> {
                     return ListTile(
                       title: Text(species.name),
                       subtitle: Text(species.scientificName),
-                      trailing: IconButton(
-                        icon: Icon(
-                          isInTank ? Icons.check_box : Icons.check_box_outline_blank,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                        onPressed: () => toggleFishInTank(species),
+                      trailing: Checkbox(
+                        value: isInTank,
+                        onChanged: (_) => toggleFishInTank(species),
+                        activeColor: Theme.of(context).primaryColor, // Primary color for checkbox
                       ),
                     );
                   },

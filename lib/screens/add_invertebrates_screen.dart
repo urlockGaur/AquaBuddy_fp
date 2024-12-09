@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import '../models/species.dart';
 import '../models/tank.dart';
@@ -7,7 +6,7 @@ import '../models/tank.dart';
 class AddInvertebratesScreen extends StatefulWidget {
   final Tank tank;
 
-  const AddInvertebratesScreen({Key? key, required this.tank}) : super(key: key);
+  const AddInvertebratesScreen({super.key, required this.tank});
 
   @override
   _AddInvertebratesScreenState createState() => _AddInvertebratesScreenState();
@@ -32,6 +31,31 @@ class _AddInvertebratesScreenState extends State<AddInvertebratesScreen> {
     }).toList();
   }
 
+  List<Species> getSelectedInvertebrates() {
+    return widget.tank.invertebrateKeys.map((key) => invertebrateBox.get(key)!).toList();
+  }
+
+  void toggleInvertebrateInTank(Species species) {
+    final invertebrateKey = species.key as int;
+
+    setState(() {
+      if (widget.tank.invertebrateKeys.contains(invertebrateKey)) {
+        widget.tank.invertebrateKeys = List.from(widget.tank.invertebrateKeys)
+          ..remove(invertebrateKey);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Removed ${species.name} from tank.')),
+        );
+      } else {
+        widget.tank.invertebrateKeys = List.from(widget.tank.invertebrateKeys)
+          ..add(invertebrateKey);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Added ${species.name} to tank.')),
+        );
+      }
+      widget.tank.save();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,6 +74,42 @@ class _AddInvertebratesScreenState extends State<AddInvertebratesScreen> {
               onChanged: (value) => setState(() => searchQuery = value),
             ),
           ),
+          const Divider(),
+          // Selected Invertebrates Display
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Selected Invertebrates:',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                const SizedBox(height: 8.0),
+                SizedBox(
+                  height: 50.0,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: getSelectedInvertebrates().map((species) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: Chip(
+                          label: Text(
+                            species.name,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          onDeleted: () => toggleInvertebrateInTank(species),
+                          backgroundColor: const Color(0xFF1E1E1E),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(),
+          // Available Invertebrates List
           Expanded(
             child: ValueListenableBuilder(
               valueListenable: invertebrateBox.listenable(),
@@ -66,27 +126,15 @@ class _AddInvertebratesScreenState extends State<AddInvertebratesScreen> {
                   itemCount: filteredInvertebrates.length,
                   itemBuilder: (context, index) {
                     final species = filteredInvertebrates[index];
-                    final isInTank =
-                    widget.tank.invertebrateKeys.contains(species.key as int);
+                    final isInTank = widget.tank.invertebrateKeys.contains(species.key as int);
 
                     return ListTile(
                       title: Text(species.name),
                       subtitle: Text(species.scientificName),
-                      trailing: IconButton(
-                        icon: Icon(
-                          isInTank ? Icons.check_box : Icons.check_box_outline_blank,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            if (isInTank) {
-                              widget.tank.invertebrateKeys.remove(species.key as int);
-                            } else {
-                              widget.tank.invertebrateKeys.add(species.key as int);
-                            }
-                            widget.tank.save();
-                          });
-                        },
+                      trailing: Checkbox(
+                        value: isInTank,
+                        onChanged: (_) => toggleInvertebrateInTank(species),
+                        activeColor: Theme.of(context).primaryColor,
                       ),
                     );
                   },

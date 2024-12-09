@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import '../models/species.dart';
 import '../models/tank.dart';
@@ -7,7 +6,7 @@ import '../models/tank.dart';
 class AddPlantsScreen extends StatefulWidget {
   final Tank tank;
 
-  const AddPlantsScreen({Key? key, required this.tank}) : super(key: key);
+  const AddPlantsScreen({super.key, required this.tank});
 
   @override
   _AddPlantsScreenState createState() => _AddPlantsScreenState();
@@ -32,6 +31,29 @@ class _AddPlantsScreenState extends State<AddPlantsScreen> {
     }).toList();
   }
 
+  List<Species> getSelectedPlants() {
+    return widget.tank.plantKeys.map((key) => plantBox.get(key)!).toList();
+  }
+
+  void togglePlantInTank(Species species) {
+    final plantKey = species.key as int;
+
+    setState(() {
+      if (widget.tank.plantKeys.contains(plantKey)) {
+        widget.tank.plantKeys = List.from(widget.tank.plantKeys)..remove(plantKey);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Removed ${species.name} from tank.')),
+        );
+      } else {
+        widget.tank.plantKeys = List.from(widget.tank.plantKeys)..add(plantKey);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Added ${species.name} to tank.')),
+        );
+      }
+      widget.tank.save();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,6 +72,42 @@ class _AddPlantsScreenState extends State<AddPlantsScreen> {
               onChanged: (value) => setState(() => searchQuery = value),
             ),
           ),
+          const Divider(),
+          // Selected Plants Display
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Selected Plants:',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                const SizedBox(height: 8.0),
+                SizedBox(
+                  height: 50.0,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: getSelectedPlants().map((species) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: Chip(
+                          label: Text(
+                            species.name,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          onDeleted: () => togglePlantInTank(species),
+                          backgroundColor: const Color(0xFF1E1E1E),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(),
+          // Available Plants List
           Expanded(
             child: ValueListenableBuilder(
               valueListenable: plantBox.listenable(),
@@ -66,27 +124,15 @@ class _AddPlantsScreenState extends State<AddPlantsScreen> {
                   itemCount: filteredPlants.length,
                   itemBuilder: (context, index) {
                     final species = filteredPlants[index];
-                    final isInTank =
-                    widget.tank.plantKeys.contains(species.key as int);
+                    final isInTank = widget.tank.plantKeys.contains(species.key as int);
 
                     return ListTile(
                       title: Text(species.name),
                       subtitle: Text(species.scientificName),
-                      trailing: IconButton(
-                        icon: Icon(
-                          isInTank ? Icons.check_box : Icons.check_box_outline_blank,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            if (isInTank) {
-                              widget.tank.plantKeys.remove(species.key as int);
-                            } else {
-                              widget.tank.plantKeys.add(species.key as int);
-                            }
-                            widget.tank.save();
-                          });
-                        },
+                      trailing: Checkbox(
+                        value: isInTank,
+                        onChanged: (_) => togglePlantInTank(species),
+                        activeColor: Theme.of(context).primaryColor,
                       ),
                     );
                   },
