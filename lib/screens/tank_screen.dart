@@ -19,10 +19,18 @@ class TankScreen extends StatefulWidget {
 class _TankScreenState extends State<TankScreen> {
   final tanksBox = Hive.box<Tank>('tanks');
   String searchQuery = '';
+  String? _selectedWaterType; // Filter by water type
 
+  // Get tanks based on the search query and water type
   List<Tank> getFilteredTanks() {
     final allTanks = tanksBox.values.toList();
-    return allTanks
+    var filteredTanks = allTanks;
+
+    if (_selectedWaterType != null) {
+      filteredTanks = filteredTanks.where((tank) => tank.waterType == _selectedWaterType).toList();
+    }
+
+    return filteredTanks
         .where((tank) => tank.name.toLowerCase().contains(searchQuery.toLowerCase()))
         .toList();
   }
@@ -40,6 +48,36 @@ class _TankScreenState extends State<TankScreen> {
           'My Aquariums',
           style: Theme.of(context).textTheme.titleLarge,
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0), // Add padding to shift it left
+            child: DropdownButton<String?>(
+              value: _selectedWaterType,
+              onChanged: (value) {
+                setState(() {
+                  _selectedWaterType = value;
+                });
+              },
+              items: [
+                const DropdownMenuItem(
+                  value: null,
+                  child: Text('All Types'),
+                ),
+                const DropdownMenuItem(
+                  value: 'Freshwater',
+                  child: Text('Freshwater'),
+                ),
+                const DropdownMenuItem(
+                  value: 'Saltwater',
+                  child: Text('Saltwater'),
+                ),
+              ],
+              dropdownColor: Theme.of(context).cardColor, // Match the dropdown background to the app theme
+              style: Theme.of(context).textTheme.bodyMedium, // Match text style with app theme
+              icon: const Icon(Icons.filter_list, color: Colors.white), // Add filter icon
+            ),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -140,56 +178,53 @@ class _TankScreenState extends State<TankScreen> {
                                 ],
                               ),
                             ),
-                            // Menu and Delete Buttons
-                            Column(
-                              children: [
-                                PopupMenuButton<String>(
-                                  icon: Icon(Icons.edit, color: textColor),
-                                  onSelected: (value) {
-                                    if (value == 'Edit Fish') {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => AddFishScreen(tank: tank),
-                                        ),
-                                      );
-                                    } else if (value == 'Edit Invertebrates') {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              AddInvertebratesScreen(tank: tank),
-                                        ),
-                                      );
-                                    } else if (value == 'Edit Plants') {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => AddPlantsScreen(tank: tank),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  itemBuilder: (context) => [
-                                    const PopupMenuItem(
-                                      value: 'Edit Fish',
-                                      child: Text('Edit Fish'),
+                            // Menu Button
+                            PopupMenuButton<String>(
+                              icon: Icon(Icons.more_vert, color: textColor), // Vertical three-dots icon
+                              onSelected: (value) {
+                                if (value == 'Edit Fish') {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddFishScreen(tank: tank),
                                     ),
-                                    const PopupMenuItem(
-                                      value: 'Edit Invertebrates',
-                                      child: Text('Edit Invertebrates'),
+                                  );
+                                } else if (value == 'Edit Invertebrates') {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddInvertebratesScreen(tank: tank),
                                     ),
-                                    const PopupMenuItem(
-                                      value: 'Edit Plants',
-                                      child: Text('Edit Plants'),
+                                  );
+                                } else if (value == 'Edit Plants') {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddPlantsScreen(tank: tank),
                                     ),
-                                  ],
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.delete, color: textColor),
-                                  onPressed: () {
+                                  );
+                                } else if (value == 'Delete Tank') {
+                                  setState(() {
                                     tank.delete();
-                                  },
+                                  });
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: 'Edit Fish',
+                                  child: Text('Edit Fish'),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'Edit Invertebrates',
+                                  child: Text('Edit Invertebrates'),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'Edit Plants',
+                                  child: Text('Edit Plants'),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'Delete Tank',
+                                  child: Text('Delete Tank'),
                                 ),
                               ],
                             ),
@@ -221,7 +256,7 @@ class _TankScreenState extends State<TankScreen> {
 
     return Row(
       children: [
-        FaIcon(icon, color: textColor, size: 20), // FontAwesome icons
+        FaIcon(icon, color: textColor, size: 20),
         const SizedBox(width: 8.0),
         Expanded(
           child: Wrap(

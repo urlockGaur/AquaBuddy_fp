@@ -5,6 +5,7 @@ import 'models/tank.dart';
 import 'models/task.dart';
 import 'models/species.dart';
 import 'package:flutter/material.dart';
+import 'models/user.dart';
 import 'screens/home_screen.dart';
 import 'services/notification_service.dart';
 
@@ -15,12 +16,14 @@ void main() async {
   Hive.registerAdapter(TankAdapter());
   Hive.registerAdapter(TaskAdapter());
   Hive.registerAdapter(SpeciesAdapter());
+  Hive.registerAdapter(UserAdapter());
 
   await Hive.openBox<Tank>('tanks');
   await Hive.openBox<Task>('tasks');
   await Hive.openBox<Species>('fish');
   await Hive.openBox<Species>("invertebrates");
   await Hive.openBox<Species>('plants');
+  await Hive.openBox<User>('users');
 
   await seedSpeciesData();
   await NotificationService.initialize();
@@ -101,6 +104,21 @@ class AquaBuddyApp extends StatelessWidget {
         checkboxTheme: CheckboxThemeData(
           fillColor: WidgetStateProperty.all(const Color(0xFF007ACC)), // Use primary blue for checkboxes
           checkColor: WidgetStateProperty.all(Colors.white), // White checkmark
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          focusedBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.blue), // Match theme color
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey[600]!),
+          ),
+          labelStyle: TextStyle(color: Colors.grey[300]),
+        ),
+        chipTheme: ChipThemeData(
+          backgroundColor: Colors.grey[700]!,
+          labelStyle: const TextStyle(color: Colors.white),
+          secondaryLabelStyle: const TextStyle(color: Colors.white),
+          secondarySelectedColor: Colors.blue,
         ),
       ),
       home: const HomeScreen(),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter_animate/flutter_animate.dart'; // Import the animation package
 import '../models/task.dart';
 import '../models/tank.dart';
-import 'add_task_screen.dart'; // Import the AddTaskScreen
-import '../services/notification_service.dart';
+import 'add_task_screen.dart';
+import 'edit_task_screen.dart'; // Import the edit screen
 
 enum TaskFilter { all, completed, incomplete }
 
@@ -46,45 +48,58 @@ class _TasksScreenState extends State<TasksScreen> {
       appBar: AppBar(
         title: const Text('Tasks'),
         actions: [
-          // Filter by Tank
-          DropdownButton<int?>(
-            value: _selectedTankKey,
-            onChanged: (value) {
-              setState(() {
-                _selectedTankKey = value;
-              });
-            },
-            items: [
-              const DropdownMenuItem(
-                value: null,
-                child: Text('All Tanks'),
-              ),
-              ...tanksBox.keys.cast<int>().map((key) {
-                final tank = tanksBox.get(key);
-                return DropdownMenuItem(
-                  value: key,
-                  child: Text(tank!.name),
-                );
-              }),
-            ],
+          // Add padding around the Tank Filter
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0), // Add padding to move filter inward
+            child: DropdownButton<int?>(
+              value: _selectedTankKey,
+              onChanged: (value) {
+                setState(() {
+                  _selectedTankKey = value;
+                });
+              },
+              items: [
+                const DropdownMenuItem(
+                  value: null,
+                  child: Text('All Tanks'),
+                ),
+                ...tanksBox.keys.cast<int>().map((key) {
+                  final tank = tanksBox.get(key);
+                  return DropdownMenuItem(
+                    value: key,
+                    child: Text(tank!.name),
+                  );
+                }),
+              ],
+              dropdownColor: Theme.of(context).cardColor, // Match dropdown background to theme
+              style: Theme.of(context).textTheme.bodyMedium, // Match text style to theme
+              icon: const Icon(Icons.filter_list, color: Colors.white), // Add filter icon
+            ),
           ),
 
-          // Filter by Task Status
-          DropdownButton<TaskFilter>(
-            value: _filter,
-            onChanged: (value) {
-              setState(() {
-                _filter = value!;
-              });
-            },
-            items: const [
-              DropdownMenuItem(value: TaskFilter.all, child: Text('All Tasks')),
-              DropdownMenuItem(value: TaskFilter.completed, child: Text('Completed Tasks')),
-              DropdownMenuItem(value: TaskFilter.incomplete, child: Text('Incomplete Tasks')),
-            ],
+          // Add padding between filters and align the Task Status Filter
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0), // Adjust space between filters
+            child: DropdownButton<TaskFilter>(
+              value: _filter,
+              onChanged: (value) {
+                setState(() {
+                  _filter = value!;
+                });
+              },
+              items: const [
+                DropdownMenuItem(value: TaskFilter.all, child: Text('All Tasks')),
+                DropdownMenuItem(value: TaskFilter.completed, child: Text('Completed Tasks')),
+                DropdownMenuItem(value: TaskFilter.incomplete, child: Text('Incomplete Tasks')),
+              ],
+              dropdownColor: Theme.of(context).cardColor, // Match dropdown background to theme
+              style: Theme.of(context).textTheme.bodyMedium, // Match text style to theme
+              icon: const Icon(Icons.filter_alt, color: Colors.white), // Add filter icon
+            ),
           ),
         ],
       ),
+
       body: ValueListenableBuilder(
         valueListenable: tasksBox.listenable(),
         builder: (context, Box<Task> box, _) {
@@ -102,38 +117,50 @@ class _TasksScreenState extends State<TasksScreen> {
             itemCount: tasks.length,
             itemBuilder: (context, index) {
               final task = tasks[index];
-              return ListTile(
-                title: Text(
-                  task.title,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-                subtitle: Text(
-                  '${task.description}\nDue: ${task.dueDate.toLocal()}',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                trailing: Wrap(
-                  spacing: 8,
-                  children: [
-                    Checkbox(
-                      value: task.isCompleted,
-                      onChanged: (value) {
-                        setState(() {
-                          task.isCompleted = value!;
-                          task.save();
-                        });
-                      },
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                child: ListTile(
+                  title: Text(
+                    task.title,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                      color: task.isCompleted ? Colors.grey : null,
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.white),
-                      onPressed: () {
+                  ),
+                  subtitle: Text(
+                    '${task.description}'
+                        '\nDue: ${DateFormat('MMM d, yyyy h:mm a').format(task.dueDate.toLocal())}'
+                        '${task.tankKey != null ? '\nTank: ${tanksBox.get(task.tankKey)?.name ?? 'Unknown'}' : ''}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: task.isCompleted ? Colors.grey : null,
+                    ),
+                  ),
+                  trailing: PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert, color: Colors.white),
+                    onSelected: (value) {
+                      if (value == 'Edit Task') {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditTaskScreen(task: task),
+                          ),
+                        );
+                      } else if (value == 'Delete Task') {
                         setState(() {
                           task.delete();
                         });
-                      },
-                    ),
-                  ],
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(value: 'Edit Task', child: Text('Edit Task')),
+                      const PopupMenuItem(value: 'Delete Task', child: Text('Delete Task')),
+                    ],
+                  ),
                 ),
-              );
+              )
+                  .animate() // Add the animation
+                  .fadeIn(duration: 500.ms)
+                  .slideY(begin: 0.2, end: 0.0);
             },
           );
         },

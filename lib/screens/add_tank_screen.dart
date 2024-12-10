@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:hive/hive.dart';
 import '../models/tank.dart';
-import 'package:uuid/uuid.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../models/user.dart';
+import '../utils/badge_utils.dart';
 
 class AddTankScreen extends StatefulWidget {
   const AddTankScreen({super.key});
@@ -80,9 +82,22 @@ class _AddTankScreenState extends State<AddTankScreen> {
 
                   final tanksBox = Hive.box<Tank>('tanks');
                   await tanksBox.add(tank); // Save tank to Hive box
-                }
 
-                Navigator.pop(context); // Return to TankScreen
+                  // Add badges for milestones
+                  final userBox = Hive.box<User>('users');
+                  if (tanksBox.length == 1) {
+                    addBadge('First Tank Created', userBox);
+                  }
+                  if (tanksBox.length == 3) {
+                    addBadge('Three Tanks Milestone', userBox);
+                  }
+
+                  Navigator.pop(context); // Return to TankScreen
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please fill out all fields.')),
+                  );
+                }
               },
               child: const Text('Save Tank'),
             ),

@@ -1,24 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/task.dart';
 import '../models/tank.dart';
-import '../models/user.dart';
-import '../utils/badge_utils.dart';
 
-class AddTaskScreen extends StatefulWidget {
-  const AddTaskScreen({super.key});
+class EditTaskScreen extends StatefulWidget {
+  final Task task; // Pass the task to edit
+
+  const EditTaskScreen({super.key, required this.task});
 
   @override
-  _AddTaskScreenState createState() => _AddTaskScreenState();
+  _EditTaskScreenState createState() => _EditTaskScreenState();
 }
 
-class _AddTaskScreenState extends State<AddTaskScreen> {
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
+class _EditTaskScreenState extends State<EditTaskScreen> {
+  late TextEditingController _titleController;
+  late TextEditingController _descriptionController;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   int? _selectedTankKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.task.title);
+    _descriptionController = TextEditingController(text: widget.task.description);
+    _selectedDate = widget.task.dueDate;
+    _selectedTime = TimeOfDay.fromDateTime(widget.task.dueDate);
+    _selectedTankKey = widget.task.tankKey;
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +43,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Add Task',
+          'Edit Task',
           style: Theme.of(context).textTheme.titleLarge,
         ),
       ),
@@ -73,7 +89,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 onPressed: () async {
                   final selectedDate = await showDatePicker(
                     context: context,
-                    initialDate: DateTime.now(),
+                    initialDate: _selectedDate ?? DateTime.now(),
                     firstDate: DateTime.now(),
                     lastDate: DateTime(2100),
                   );
@@ -90,7 +106,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               title: Text(
                 _selectedTime == null
                     ? 'Select Time'
-                    : 'Time: ${_selectedTime!.format(context)}', // Display in 12-hour format
+                    : 'Time: ${_selectedTime!.format(context)}',
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               trailing: IconButton(
@@ -98,7 +114,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 onPressed: () async {
                   final selectedTime = await showTimePicker(
                     context: context,
-                    initialTime: TimeOfDay.now(),
+                    initialTime: _selectedTime ?? TimeOfDay.now(),
                   );
                   setState(() {
                     _selectedTime = selectedTime;
@@ -109,22 +125,26 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             const SizedBox(height: 10.0),
 
             // Tank Assignment Dropdown
-            DropdownButtonFormField<int>(
+            DropdownButtonFormField<int?>(
               decoration: InputDecoration(
-                labelText: 'Assign to Tank',
+                labelText: 'Assign to Tank (Optional)',
                 labelStyle: Theme.of(context).textTheme.bodyMedium,
                 border: const OutlineInputBorder(),
               ),
-              items: tanksBox.keys.cast<int>().map((key) {
-                final tank = tanksBox.get(key);
-                return DropdownMenuItem(
-                  value: key,
-                  child: Text(
-                    tank!.name,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                );
-              }).toList(),
+              value: _selectedTankKey,
+              items: [
+                const DropdownMenuItem(value: null, child: Text('No Tank')),
+                ...tanksBox.keys.cast<int>().map((key) {
+                  final tank = tanksBox.get(key);
+                  return DropdownMenuItem(
+                    value: key,
+                    child: Text(
+                      tank!.name,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  );
+                }),
+              ],
               onChanged: (value) {
                 setState(() {
                   _selectedTankKey = value;
@@ -133,17 +153,14 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             ),
             const SizedBox(height: 20.0),
 
-            // Save Task Button
+            // Save Changes Button
             ElevatedButton(
               onPressed: () {
                 if (_titleController.text.isNotEmpty &&
-                    _descriptionController.text.isNotEmpty &&
                     _selectedDate != null &&
                     _selectedTime != null) {
-                  final tasksBox = Hive.box<Task>('tasks');
-
                   // Combine date and time
-                  final scheduledDate = DateTime(
+                  final updatedDate = DateTime(
                     _selectedDate!.year,
                     _selectedDate!.month,
                     _selectedDate!.day,
@@ -151,30 +168,23 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     _selectedTime!.minute,
                   );
 
-                  final newTask = Task(
-                    title: _titleController.text,
-                    description: _descriptionController.text,
-                    dueDate: scheduledDate,
-                    isCompleted: false,
-                    tankKey: _selectedTankKey,
-                  );
-
-                  tasksBox.add(newTask);
-
-                  // Add badge for creating the first task
-                  final userBox = Hive.box<User>('users');
-                  if (tasksBox.length == 1) {
-                    addBadge('First Task Created', userBox);
-                  }
-
+                  widget.task.title = _titleController.text;
+                  widget.task.description = _descriptionController.text;
+                  widget.task.dueDate = updatedDate;
+                  widget.task.tankKey = _selectedTankKey;
+                  widget.task.save(); // Save updates to Hive
                   Navigator.pop(context);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please fill out all fields.')),
+                    const SnackBar(content: Text('Please fill out all required fields.')),
                   );
                 }
               },
-              child: const Text('Save Task'),
+              child: const Text('Save Changes'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                textStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 16),
+              ),
             ),
           ],
         ),
