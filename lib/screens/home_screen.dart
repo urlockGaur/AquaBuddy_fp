@@ -149,7 +149,7 @@ class HomeDashboard extends StatelessWidget {
                       ),
                     ] else if (user != null) const Text('No badges earned yet.'),
                     if (user == null) Text(
-                      'No account found. Create one to track progress!',
+                      'No account found. Create one to track progress and earn badges!',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
 
