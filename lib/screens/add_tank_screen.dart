@@ -90,6 +90,8 @@ class _AddTankScreenState extends State<AddTankScreen> {
                       incrementActivityCount(activityType: 'tank', userBox: userBox);
                       showCustomFlushbar(context, 'Tank added successfully!',
                           icon: Icons.water_drop);
+                      await Future.delayed(const Duration(seconds: 3));
+                      Navigator.pop(context);
                     } else {
                       final bool? created = await Navigator.push(
                         context,
@@ -99,15 +101,21 @@ class _AddTankScreenState extends State<AddTankScreen> {
                       );
                       if (created == true) {
                         incrementActivityCount(activityType: 'tank', userBox: userBox);
-                        showCustomFlushbar(context, 'Tank added successfully after account creation!',
-                            icon: Icons.water_drop);
+                        showCustomFlushbar(
+                          context,
+                          'Tank added successfully after account creation!',
+                          icon: Icons.water_drop,
+                        );
+                        await Future.delayed(const Duration(seconds: 3));
+                        Navigator.pop(context);
                       }
                     }
-
-                    Navigator.pop(context);
                   } else {
-                    showCustomFlushbar(context, 'Please fill out all fields!',
-                        icon: Icons.error, duration: Duration(seconds: 2));
+                    showCustomFlushbar(
+                      context,
+                      'Please fill out all fields!',
+                      icon: Icons.error,
+                    );
                   }
                 },
                 child: const Text('Save Tank'),

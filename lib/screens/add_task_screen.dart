@@ -72,6 +72,24 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     initialDate: DateTime.now(),
                     firstDate: DateTime.now(),
                     lastDate: DateTime(2100),
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: ColorScheme.dark(
+                            primary: Theme.of(context).primaryColor, // Header background
+                            onPrimary: Colors.white, // Header text
+                            surface: Theme.of(context).cardColor, // Picker background
+                            onSurface: Colors.white, // Text color
+                          ),
+                          textButtonTheme: TextButtonThemeData(
+                            style: TextButton.styleFrom(
+                              foregroundColor: Theme.of(context).primaryColor, // Button text
+                            ),
+                          ),
+                        ),
+                        child: child!,
+                      );
+                    },
                   );
                   setState(() {
                     _selectedDate = selectedDate;
@@ -93,6 +111,24 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   final selectedTime = await showTimePicker(
                     context: context,
                     initialTime: TimeOfDay.now(),
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: ColorScheme.dark(
+                            primary: Theme.of(context).primaryColor, // Header background
+                            onPrimary: Colors.white, // Header text
+                            surface: Theme.of(context).cardColor, // Picker background
+                            onSurface: Colors.white, // Text color
+                          ),
+                          textButtonTheme: TextButtonThemeData(
+                            style: TextButton.styleFrom(
+                              foregroundColor: Theme.of(context).primaryColor, // Button text
+                            ),
+                          ),
+                        ),
+                        child: child!,
+                      );
+                    },
                   );
                   setState(() {
                     _selectedTime = selectedTime;
@@ -154,6 +190,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     incrementActivityCount(activityType: 'task', userBox: userBox);
                     showCustomFlushbar(context, 'Task added successfully!',
                         icon: Icons.task_alt);
+                    await Future.delayed(const Duration(seconds: 2));
+                    Navigator.pop(context);
                   } else {
                     final bool? created = await Navigator.push(
                       context,
@@ -163,15 +201,21 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     );
                     if (created == true) {
                       incrementActivityCount(activityType: 'task', userBox: userBox);
-                      showCustomFlushbar(context, 'Task added successfully after account creation!',
-                          icon: Icons.task_alt);
+                      showCustomFlushbar(
+                        context,
+                        'Task added successfully after account creation!',
+                        icon: Icons.task_alt,
+                      );
+                      await Future.delayed(const Duration(seconds: 2));
+                      Navigator.pop(context);
                     }
                   }
-
-                  Navigator.pop(context);
                 } else {
-                  showCustomFlushbar(context, 'Please fill out all fields!',
-                      icon: Icons.error, duration: Duration(seconds: 2));
+                  showCustomFlushbar(
+                    context,
+                    'Please fill out all fields!',
+                    icon: Icons.error,
+                  );
                 }
               },
               child: const Text('Save Task'),
