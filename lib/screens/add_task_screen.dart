@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/task.dart';
 import '../models/tank.dart';
 import '../models/user.dart';
+import '../utils/alert_utils.dart';
 import '../utils/badge_utils.dart';
+import '../screens/create_account_screen.dart';
 
 class AddTaskScreen extends StatefulWidget {
   const AddTaskScreen({super.key});
@@ -36,7 +37,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Task Title
             TextField(
               controller: _titleController,
               decoration: InputDecoration(
@@ -47,8 +47,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 10.0),
-
-            // Task Description
             TextField(
               controller: _descriptionController,
               decoration: InputDecoration(
@@ -59,8 +57,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 10.0),
-
-            // Due Date Picker
             ListTile(
               title: Text(
                 _selectedDate == null
@@ -84,13 +80,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               ),
             ),
             const SizedBox(height: 10.0),
-
-            // Time Picker
             ListTile(
               title: Text(
                 _selectedTime == null
                     ? 'Select Time'
-                    : 'Time: ${_selectedTime!.format(context)}', // Display in 12-hour format
+                    : 'Time: ${_selectedTime!.format(context)}',
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               trailing: IconButton(
@@ -107,8 +101,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               ),
             ),
             const SizedBox(height: 10.0),
-
-            // Tank Assignment Dropdown
             DropdownButtonFormField<int>(
               decoration: InputDecoration(
                 labelText: 'Assign to Tank',
@@ -132,17 +124,13 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               },
             ),
             const SizedBox(height: 20.0),
-
-            // Save Task Button
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (_titleController.text.isNotEmpty &&
                     _descriptionController.text.isNotEmpty &&
                     _selectedDate != null &&
                     _selectedTime != null) {
                   final tasksBox = Hive.box<Task>('tasks');
-
-                  // Combine date and time
                   final scheduledDate = DateTime(
                     _selectedDate!.year,
                     _selectedDate!.month,
@@ -161,17 +149,29 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
                   tasksBox.add(newTask);
 
-                  // Add badge for creating the first task
                   final userBox = Hive.box<User>('users');
-                  if (tasksBox.length == 1) {
-                    addBadge('First Task Created', userBox);
+                  if (userBox.isNotEmpty) {
+                    incrementActivityCount(activityType: 'task', userBox: userBox);
+                    showCustomFlushbar(context, 'Task added successfully!',
+                        icon: Icons.task_alt);
+                  } else {
+                    final bool? created = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CreateAccountScreen(),
+                      ),
+                    );
+                    if (created == true) {
+                      incrementActivityCount(activityType: 'task', userBox: userBox);
+                      showCustomFlushbar(context, 'Task added successfully after account creation!',
+                          icon: Icons.task_alt);
+                    }
                   }
 
                   Navigator.pop(context);
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please fill out all fields.')),
-                  );
+                  showCustomFlushbar(context, 'Please fill out all fields!',
+                      icon: Icons.error, duration: Duration(seconds: 2));
                 }
               },
               child: const Text('Save Task'),

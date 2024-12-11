@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:aquabuddy/screens/splash_screen.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/tank.dart';
@@ -13,28 +14,34 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
 
+  // Register adapters
   Hive.registerAdapter(TankAdapter());
   Hive.registerAdapter(TaskAdapter());
   Hive.registerAdapter(SpeciesAdapter());
   Hive.registerAdapter(UserAdapter());
 
+  // Open the boxes
   await Hive.openBox<Tank>('tanks');
   await Hive.openBox<Task>('tasks');
   await Hive.openBox<Species>('fish');
-  await Hive.openBox<Species>("invertebrates");
+  await Hive.openBox<Species>('invertebrates');
   await Hive.openBox<Species>('plants');
   await Hive.openBox<User>('users');
 
+  // Seed species data if required
   await seedSpeciesData();
   await NotificationService.initialize();
 
   runApp(const AquaBuddyApp());
 }
+
+
 Future<void> seedSpeciesData() async {
   final fishBox = Hive.box<Species>('fish');
   final invertebratesBox = Hive.box<Species>('invertebrates');
   final plantsBox = Hive.box<Species>('plants');
 
+  // Only seed data if the box is empty
   if (fishBox.isEmpty && invertebratesBox.isEmpty && plantsBox.isEmpty) {
     final String data = await rootBundle.loadString('assets/species_data.json');
     final Map<String, dynamic> jsonResult = json.decode(data);
@@ -59,6 +66,10 @@ Future<void> seedSpeciesData() async {
         scientificName: plant['scientificName'],
       ));
     }
+
+    print("Seed data added successfully.");
+  } else {
+    print("Boxes are not empty. Skipping seed data.");
   }
 }
 class AquaBuddyApp extends StatelessWidget {
@@ -121,7 +132,7 @@ class AquaBuddyApp extends StatelessWidget {
           secondarySelectedColor: Colors.blue,
         ),
       ),
-      home: const HomeScreen(),
+      home: const SplashScreen(),
     );
   }
 }

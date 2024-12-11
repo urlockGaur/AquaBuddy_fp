@@ -58,16 +58,16 @@ class _TankScreenState extends State<TankScreen> {
                   _selectedWaterType = value;
                 });
               },
-              items: [
-                const DropdownMenuItem(
+              items: const [
+                DropdownMenuItem(
                   value: null,
                   child: Text('All Types'),
                 ),
-                const DropdownMenuItem(
+                DropdownMenuItem(
                   value: 'Freshwater',
                   child: Text('Freshwater'),
                 ),
-                const DropdownMenuItem(
+                DropdownMenuItem(
                   value: 'Saltwater',
                   child: Text('Saltwater'),
                 ),

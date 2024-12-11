@@ -180,11 +180,11 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   );
                 }
               },
-              child: const Text('Save Changes'),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                 textStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 16),
               ),
+              child: const Text('Save Changes'),
             ),
           ],
         ),

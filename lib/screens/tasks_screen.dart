@@ -173,9 +173,9 @@ class _TasksScreenState extends State<TasksScreen> {
             MaterialPageRoute(builder: (context) => const AddTaskScreen()),
           );
         },
-        child: const Icon(Icons.add),
         backgroundColor: Theme.of(context).floatingActionButtonTheme.backgroundColor,
         foregroundColor: Theme.of(context).floatingActionButtonTheme.foregroundColor,
+        child: const Icon(Icons.add),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import '../models/species.dart';
 import '../models/tank.dart';
+import '../utils/alert_utils.dart';
 
 class AddPlantsScreen extends StatefulWidget {
   final Tank tank;
@@ -41,18 +42,23 @@ class _AddPlantsScreenState extends State<AddPlantsScreen> {
     setState(() {
       if (widget.tank.plantKeys.contains(plantKey)) {
         widget.tank.plantKeys = List.from(widget.tank.plantKeys)..remove(plantKey);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Removed ${species.name} from tank.')),
+        showCustomFlushbar(
+          context,
+          'Removed ${species.name} from tank.',
+          icon: Icons.remove_circle,
         );
       } else {
         widget.tank.plantKeys = List.from(widget.tank.plantKeys)..add(plantKey);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Added ${species.name} to tank.')),
+        showCustomFlushbar(
+          context,
+          'Added ${species.name} to tank.',
+          icon: Icons.add_circle,
         );
       }
       widget.tank.save();
     });
   }
+
 
   @override
   Widget build(BuildContext context) {

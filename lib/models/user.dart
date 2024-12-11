@@ -16,10 +16,18 @@ class User {
   @HiveField(3)
   final List<Map<String, String>> badges; // List of badge name and icon
 
+  @HiveField(4) // Add new field for tanks created
+  int tanksCreated;
+
+  @HiveField(5) // Add new field for tasks created
+  int tasksCreated;
+
   User({
     required this.username,
     required this.email,
     required this.password,
     required this.badges,
+    this.tanksCreated = 0, // Initialize new fields with default values
+    this.tasksCreated = 0,
   });
 }

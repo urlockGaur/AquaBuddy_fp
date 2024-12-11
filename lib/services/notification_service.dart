@@ -1,48 +1,77 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 
 class NotificationService {
-  static final _notifications = FlutterLocalNotificationsPlugin();
+  static final FlutterLocalNotificationsPlugin _notificationsPlugin =
+  FlutterLocalNotificationsPlugin();
 
   static Future<void> initialize() async {
-    tz.initializeTimeZones(); // Initialize timezones
-    const initializationSettings = InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+    // Initialize timezone data
+    tz.initializeTimeZones();
+
+    // Initialization settings for Android
+    const AndroidInitializationSettings androidSettings =
+    AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    // Initialization settings for iOS
+    const DarwinInitializationSettings iosSettings =
+    DarwinInitializationSettings();
+
+    // Initialization settings for the plugin
+    const InitializationSettings settings =
+    InitializationSettings(android: androidSettings, iOS: iosSettings);
+
+    await _notificationsPlugin.initialize(settings);
+  }
+
+  static Future<void> scheduleNotification({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledTime,
+  }) async {
+    final tz.TZDateTime tzScheduledTime = tz.TZDateTime.from(scheduledTime, tz.local);
+
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'channel_id',
+      'channel_name',
+      channelDescription: 'Description of the channel',
+      importance: Importance.high,
+      priority: Priority.high,
     );
 
-    await _notifications.initialize(
-      initializationSettings,
-    );
+    const NotificationDetails details =
+    NotificationDetails(android: androidDetails);
 
-    // Request permissions
-    await _notifications
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestPermission();
+    await _notificationsPlugin.zonedSchedule(
+      id,
+      title,
+      body,
+      tzScheduledTime,
+      details,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+      UILocalNotificationDateInterpretation.absoluteTime,
+    );
   }
 
   static Future<void> showNotification({
     required int id,
     required String title,
     required String body,
-    required DateTime scheduledDate,
   }) async {
-    final tzDateTime = tz.TZDateTime.from(scheduledDate, tz.local); // Convert to TZDateTime
-    await _notifications.zonedSchedule(
-      id,
-      title,
-      body,
-      tzDateTime,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'main_channel',
-          'Main Channel',
-          channelDescription: 'Main channel notifications',
-        ),
-      ),
-      androidAllowWhileIdle: true,
-      uiLocalNotificationDateInterpretation:
-      UILocalNotificationDateInterpretation.absoluteTime,
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'channel_id',
+      'channel_name',
+      channelDescription: 'Description of the channel',
+      importance: Importance.high,
+      priority: Priority.high,
     );
+
+    const NotificationDetails details =
+    NotificationDetails(android: androidDetails);
+
+    await _notificationsPlugin.show(id, title, body, details);
   }
 }

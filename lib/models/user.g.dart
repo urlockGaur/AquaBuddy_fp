@@ -23,13 +23,15 @@ class UserAdapter extends TypeAdapter<User> {
       badges: (fields[3] as List)
           .map((dynamic e) => (e as Map).cast<String, String>())
           .toList(),
+      tanksCreated: fields[4] as int,
+      tasksCreated: fields[5] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, User obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.username)
       ..writeByte(1)
@@ -37,7 +39,11 @@ class UserAdapter extends TypeAdapter<User> {
       ..writeByte(2)
       ..write(obj.password)
       ..writeByte(3)
-      ..write(obj.badges);
+      ..write(obj.badges)
+      ..writeByte(4)
+      ..write(obj.tanksCreated)
+      ..writeByte(5)
+      ..write(obj.tasksCreated);
   }
 
   @override
