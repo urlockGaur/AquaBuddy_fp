@@ -50,7 +50,7 @@ class _TankScreenState extends State<TankScreen> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 8.0), // Add padding to shift it left
+            padding: const EdgeInsets.only(right: 8.0),
             child: DropdownButton<String?>(
               value: _selectedWaterType,
               onChanged: (value) {
@@ -72,9 +72,9 @@ class _TankScreenState extends State<TankScreen> {
                   child: Text('Saltwater'),
                 ),
               ],
-              dropdownColor: Theme.of(context).cardColor, // Match the dropdown background to the app theme
-              style: Theme.of(context).textTheme.bodyMedium, // Match text style with app theme
-              icon: const Icon(Icons.filter_list, color: Colors.white), // Add filter icon
+              dropdownColor: Theme.of(context).cardColor,
+              style: Theme.of(context).textTheme.bodyMedium,
+              icon: const Icon(Icons.filter_list, color: Colors.white),
             ),
           ),
         ],

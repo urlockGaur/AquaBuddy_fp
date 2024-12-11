@@ -17,7 +17,7 @@ class Task extends HiveObject {
   bool isCompleted;
 
   @HiveField(4)
-  int? tankKey; // Link to a specific tank
+  int? tankKey;
 
   Task({
     required this.title,

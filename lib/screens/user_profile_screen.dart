@@ -121,11 +121,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               final confirm = await showDialog<bool>(
                 context: context,
                 builder: (context) => AlertDialog(
-                  backgroundColor: Theme.of(context).cardColor, // Align with card color
-                  titleTextStyle: Theme.of(context).textTheme.titleLarge, // Align title style
-                  contentTextStyle: Theme.of(context).textTheme.bodyMedium, // Align body style
+                  backgroundColor: Theme.of(context).cardColor,
+                  titleTextStyle: Theme.of(context).textTheme.titleLarge,
+                  contentTextStyle: Theme.of(context).textTheme.bodyMedium,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0), // Match app's rounded corners
+                    borderRadius: BorderRadius.circular(12.0),
                   ),
                   title: const Text('Delete Account'),
                   content: const Text('Are you sure you want to delete your account?'),

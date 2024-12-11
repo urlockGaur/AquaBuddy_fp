@@ -57,7 +57,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212), // Match your theme's background
+      backgroundColor: const Color(0xFF121212),
       body: Center(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -65,7 +65,7 @@ class _SplashScreenState extends State<SplashScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(
-                FontAwesomeIcons.fish, // FontAwesome fish icon
+                FontAwesomeIcons.fish,
                 size: 80.0,
                 color: Color(0xFF007ACC), // Theme's primary color
               ),

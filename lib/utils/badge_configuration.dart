@@ -1,7 +1,7 @@
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 
-// Centralized badge configuration
+/// Centralized badge configuration
 final Map<String, IconData> badgeIcons = {
   'Account Created': FontAwesomeIcons.user,
   'First Tank Created': FontAwesomeIcons.water,

@@ -17,7 +17,7 @@ class Tank extends HiveObject {
   int sizeInGallons;
 
   @HiveField(4)
-  List<int> fishKeys; // Mutable list of species keys
+  List<int> fishKeys;
 
   @HiveField(5)
   List<int> invertebrateKeys;
